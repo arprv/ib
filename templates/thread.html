@@ -1,16 +1,6 @@
-<!doctype html>
-<html>
+{% extends "base.html" %}
 
-<!-- TODO: Remove the junk stamp-->
-<link rel="stylesheet" type="text/css" href="{{ url_for("static", filename="style.css") + "?q=" + range(1,9000)|random|string }}">
-
-<div class="banner">
-    <center>
-        <img src="{{ url_for("static", filename="/banners/banner_" + range(1, 16)|random|string + ".png") }}">
-    </center>
-</div>
-
-<div class="container">
+{% block form %}
     <center><h2 class="title">Reply</h2></center>
     <form action="{{ url_for("reply", thread_id=thread["ID"]) }}" method="post" id="reply_form" enctype="multipart/form-data">
         <input type="hidden" name="thread_id" value="{{ thread["ID"] }}">
@@ -26,119 +16,17 @@
         </div>
         <input type="submit" id="submit_btn" value="post">
     </form>
+{% endblock %}
+
+{% block navbar %}
+<div class="nav_bar">
+    [<a href="{{ url_for("board") }}">Return</a>]
+    <span class="t_stats">
+        <span class="t_replies" title="Replies">{{ thread["R_COUNT"] }}</span>
+         / 
+        <span class="t_images" title="Images">{{ thread["I_COUNT"] }}</span>
+         / 
+        <span class="t_posters" title="Posters">{{ thread["P_COUNT"] }}</span>
 </div>
 <hr>
-
-<div class="thread" id="t{{ thread["ID"] }}">
-    <div class="nav_bar">
-        [<a href="{{ url_for("board") }}">Return</a>]
-        <span class="t_stats">
-            <span class="t_replies" title="Replies">{{ thread["R_COUNT"] }}</span>
-             / 
-            <span class="t_images" title="Images">{{ thread["I_COUNT"] }}</span>
-             / 
-            <span class="t_posters" title="Posters">{{ thread["P_COUNT"] }}</span>
-    </div>
-    <hr>
-    <div class="op_container" id="pc{{ thread["ID"] }}">
-        <div class="op" id="p{{ thread["ID"] }}">
-            <div class="file" id="f{{ thread["ID"] }}">
-                <div class="file_info" id="fi{{ thread["OP"]["ID"] }}">
-                    File: 
-                    <a href="{{ url_for("files", id=thread["OP"]["FILE"]["ID"]|int) }}" target="_blank">{{ thread["OP"]["FILE"]["NAME"] }}</a>
-                    ({{ thread["OP"]["FILE"]["SIZE"] // 1024 }}KB, {{ thread["OP"]["FILE"]["RES"] }})
-                </div>
-                <a id="ft{{ thread["OP"]["FILE"]["ID"]|int }}" class="file_thumb"target="_blank"
-                    onclick="expand_file('{{ thread["OP"]["FILE"]["ID"]|int }}');return false;">
-                    <img id="tn{{ thread["OP"]["FILE"]["ID"]|int }}" src="{{ url_for("thumbs", id=thread["OP"]["FILE"]["ID"]|int) }}" alt=":^(">
-                </a>
-            </div>
-            <div class="post_info" id="pi{{ thread["ID"] }}">
-                    
-                {% if thread["SUBJECT"] %}
-                    <span class="subject">{{ thread["SUBJECT"] }} </span>
-                {% endif %}
-                <span class="name">
-                    {{ "Anonymous" if not thread["OP"]["USERNAME"] else thread["OP"]["USERNAME"] }}
-                </span>
-                <span class="time"> {{ thread["OP"]["TIME"] }} </span>
-                <span class="post_num">
-                    No.
-                    <a 
-                    href="{{ url_for("thread", thread_id=thread["ID"]|string, prefill_text=">>" + thread["ID"]|string) }}"
-                        title="Reply to this post">{{ thread["ID"] }}</a>
-                </span>
-                {% if thread["OP"]["LINKS"] %}
-                    <span class="quotes">&#x07f7
-                        {% for l in thread["OP"]["LINKS"] %}
-                            {{ ("<a href=#p" ~ l + ">>>" ~ l ~ "</a>")|safe }}
-                        {% endfor %}
-                    </span>
-                {% endif %}
-            </div>
-            <blockquote class="post_text" id="t{{ thread["ID"] }}">
-                {{ thread["OP"]["TEXT"]|safe }}
-            </blockquote>
-        </div>
-    </div>
-
-{% for post in thread["POSTS"] %}
-    <div class="reply_container" id="pc{{ post["ID"] }}">
-        <div class="side_arrows" id="sa{{ post["ID"] }}">>></div>
-        <div class="post" id="p{{ post["ID"] }}">
-            <div class="post_info" id="pi{{ post["ID"] }}">
-                <span class="name">{{ "Anonymous" if not post["USERNAME"] else post["USERNAME"] }}</span>
-                <span class="time"> {{ post["TIME"] }} </span>
-                <span class="post_num">
-                    No.
-                    <a 
-                    href="{{ url_for("thread", thread_id=thread["ID"]|string, prefill_text=">>" + post["ID"]|string) }}"
-                        title="Reply to this post">{{ post["ID"] }}</a>
-                </span>
-                {% if post["LINKS"] %}
-                    <span class="quotes">&#x07f7
-                        {% for l in post["LINKS"] %}
-                            {{ ("<a href=#p" ~ l + ">>>" ~ l ~ "</a>")|safe }}
-                        {% endfor %}
-                    </span>
-                {% endif %}
-                {% if post["FILE"] %}
-                    <div class="file" id="f{{ post["ID"] }}">
-                        <div class="file_info" id="fi{{ post["ID"] }}">
-                            File: 
-                            <a href="{{ url_for("files", id=post["FILE"]["ID"]|int) }}" target="_blank">{{ post["FILE"]["NAME"] }}</a>
-                            ({{ post["FILE"]["SIZE"] // 1024 }}KB, {{ post["FILE"]["RES"] }})
-                        </div>
-                        <a id="ft{{ post["FILE"]["ID"]|int }}" class="file_thumb"target="_blank"
-                            onclick="expand_file('{{ post["FILE"]["ID"]|int }}');return false;">
-                            <img id="tn{{ post["FILE"]["ID"]|int }}" src="{{ url_for("thumbs", id=post["FILE"]["ID"]|int) }}" alt=":^(">
-                        </a>
-                    </div>
-                {% endif %}
-            </div>
-            <blockquote class="post_text" id="t{{ post["ID"] }}">
-                {{ post["TEXT"]|safe }}
-            </blockquote>
-        </div>
-    </div>
-{% endfor %}
-
-<hr>
-
-<script type=text/javascript>
-    function expand_file(id){
-        var ft = document.getElementById('ft' + id);
-        var tn = document.getElementById('tn' + id);
-        if(tn.hasAttribute('expanded')){
-            tn.setAttribute('src', tn.getAttribute('src').replace('files', 'thumbs'));
-            ft.removeAttribute('style');
-            tn.removeAttribute('expanded');
-        }else{
-            tn.setAttribute('src', tn.getAttribute('src').replace('thumbs', 'files'));
-            ft.setAttribute('style', 'float: none;');
-            tn.setAttribute('expanded', '');
-        }
-    }
-</script>
-
-</html>
+{% endblock %}

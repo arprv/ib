@@ -107,3 +107,4 @@ venv.bak/
 # custom
 *.swp
 cred.py
+*~

@@ -175,17 +175,19 @@ def fetch_thread_data(threads, cursor):
 
 def refine_text(s):
     # Sanitize the string
-    s = re.sub(r'<.*?>', '', s)
+    s = re.sub(r'<.*?>', '', s).strip()
 
     patterns = (
         '(?P<link>>>(\d+))',
-        '(?P<quote>(^|[^>])(>[^>\s]+[^>\n]*))',
+        '(?P<quote>(^|[^>])(>[^>\n]+[^>\n]*))',
+        '(?P<eline>(\n)\s*\n*\s*(\n))',
     )
     subs = {
         'link': lambda mo : \
             '<a class="plink" href="#p%s">%s</a>' % (mo.group(2), mo.group(1)),
         'quote': lambda mo : \
             '<span class="greentext">%s</span>' % (mo.group(3),),
+        'eline': lambda mo : '%s%s' % (mo.group(7), mo.group(8)),
     }
     regex = re.compile('|'.join(patterns), re.MULTILINE)
 
@@ -195,7 +197,7 @@ def refine_text(s):
             if v:
                 return subs[k](mo)
 
-    return regex.sub(reg_match, s).strip().replace('\n', '<br>')
+    return regex.sub(reg_match, s).replace('\n', '<br>')
 
 def store_post(thread_id, file_id, cursor):
     # Handle link quotes

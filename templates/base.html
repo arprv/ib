@@ -1,0 +1,172 @@
+<!doctype html>
+<html>
+{# TODO: Remove the junk stamp #}
+<link rel="stylesheet" type="text/css" href="{{ url_for("static", filename="style.css") + "?q=" + range(1,9000)|random|string }}">
+
+<div class="banner">
+    <center>
+        <img src="{{ url_for("static", filename="/banners/banner_" + range(1, 16)|random|string + ".png") }}">
+    </center>
+</div>
+
+<div class="container">
+    {%- block form -%}
+    {%- endblock -%}
+</div>
+<hr>
+
+{%- block navbar -%}
+{%- endblock -%}
+
+{%- if not threads and thread -%}
+    {%- set threads = [thread] -%}
+    {%- set posts_to_print = 0 -%}
+    {%- set op_deco = false -%}
+{%- else -%}
+    {%- set posts_to_print = 5 -%}
+    {%- set op_deco = true -%}
+{%- endif -%}
+
+{# TODO: Figure out a way to move the loop into board.html #}
+{%- block thread -%}
+{%- if threads -%}
+{%- for thread in threads -%}
+<div class="thread" id="t{{ thread["ID"] }}">
+    <div class="op_container" id="pc{{ thread["ID"] }}">
+        <div class="op" id="p{{ thread["ID"] }}">
+            <div class="file" id="f{{ thread["ID"] }}">
+                <div class="file_info" id="fi{{ thread["OP"]["ID"] }}">
+                    File: 
+                    <a href="{{ url_for("files", id=thread["OP"]["FILE"]["ID"]|int) }}" target="_blank">{{ thread["OP"]["FILE"]["NAME"] }}</a>
+                    ({{ thread["OP"]["FILE"]["SIZE"] // 1024 }}KB, {{ thread["OP"]["FILE"]["RES"] }})
+                </div>
+                <a id="ft{{ thread["OP"]["FILE"]["ID"]|int }}" class="file_thumb"target="_blank" onclick="expand_file('{{ thread["OP"]["FILE"]["ID"]|int }}');return false;">
+                    <img id="tn{{ thread["OP"]["FILE"]["ID"]|int }}" src="{{ url_for("thumbs", id=thread["OP"]["FILE"]["ID"]|int) }}" alt=":^(">
+                </a>
+            </div>
+            <div class="post_info" id="pi{{ thread["ID"] }}">
+                {%- if thread["SUBJECT"] -%}
+                    <span class="subject">{{ thread["SUBJECT"] }} </span>
+                {%- endif -%}
+                <span class="name">
+                    {{ "Anonymous" if not thread["OP"]["USERNAME"] else thread["OP"]["USERNAME"] }}
+                </span>
+                <span class="time"> {{ thread["OP"]["TIME"] }} </span>
+                <span class="post_num">No.<a href="{{ url_for("thread", thread_id=thread["ID"]|string, prefill_text=">>" + thread["ID"]|string) }}" title="Reply to this post">{{ thread["ID"] }}</a>
+                </span>
+                {%- if op_deco -%}
+                    <span>
+                         [<a href="{{ url_for("thread", thread_id=thread["ID"]|string) }}" class="replylink">Reply</a>]
+                    </span>
+                {%- endif -%}
+                {%- if thread["OP"]["LINKS"] -%}
+                    <span class="quotes">&#x07f7
+                        {%- for l in thread["OP"]["LINKS"] -%}
+                            {{ (" <a href=#p" ~ l + ">>>" ~ l ~ "</a>")|safe }}
+                        {%- endfor -%}
+                    </span>
+                {%- endif -%}
+            </div>
+            <blockquote class="post_text" id="t{{ thread["ID"] }}">
+                {{ thread["OP"]["TEXT"]|safe }}
+            </blockquote>
+            {%- if op_deco -%}
+            <span class="summary">
+                {{ thread["R_COUNT"] }} replies and {{ thread["I_COUNT"] }} images by {{ thread["P_COUNT"] }} posters total.
+                <a href="{{ url_for("thread", thread_id=thread["ID"]|string)}}" class=replylink">Click here</a> to view.
+            </span>
+            {%- endif -%}
+        </div>
+    </div>
+
+{%- for post in thread["POSTS"][-posts_to_print:] -%}
+    <div class="reply_container" id="pc{{ post["ID"] }}">
+        <div class="side_arrows" id="sa{{ post["ID"] }}">>></div>
+        <div class="post" id="p{{ post["ID"] }}">
+            <div class="post_info" id="pi{{ post["ID"] }}">
+                <span class="name">
+                    {{ "Anonymous" if not post["USERNAME"] else post["USERNAME"] }}
+                </span>
+                <span class="time"> {{ post["TIME"] }} </span>
+                <span class="post_num">
+                    No.
+                    <a href="{{ url_for("thread", thread_id=thread["ID"]|string, prefill_text=">
+                        >" + post["ID"]|string) }}" title="Reply to this post">{{ post["ID"] }}
+                    </a>
+                </span>
+                {%- if post["LINKS"] -%}
+                    <span class="quotes">&#x07f7
+                        {%- for l in post["LINKS"] -%}
+                            {{ ("<a href=#p" ~ l + ">>>" ~ l ~ "</a>")|safe }}
+                        {%- endfor -%}
+                    </span>
+                {%- endif -%}
+                {%- if post["FILE"] -%}
+                    <div class="file" id="f{{ post["ID"] }}">
+                        <div class="file_info" id="fi{{ post["ID"] }}">
+                            File: 
+                            <a href="{{ url_for("files", id=post["FILE"]["ID"]|int) }}" target="_blank">{{ post["FILE"]["NAME"] }}</a>
+                            ({{ post["FILE"]["SIZE"] // 1024 }}KB, {{ post["FILE"]["RES"] }})
+                        </div>
+                        <a id="ft{{ post["FILE"]["ID"]|int }}" class="file_thumb"target="_blank" onclick="expand_file('{{ post["FILE"]["ID"]|int }}');return false;">
+                            <img id="tn{{ post["FILE"]["ID"]|int }}" src="{{ url_for("thumbs", id=post["FILE"]["ID"]|int) }}" alt=":^(">
+                        </a>
+                    </div>
+                {%- endif -%}
+            </div>
+            <blockquote class="post_text" id="t{{ post["ID"] }}">
+                {{ post["TEXT"]|safe }}
+            </blockquote>
+        </div>
+    </div>
+{%- endfor -%}
+<hr>
+{%- endfor -%}
+{%- endif -%}
+{%- endblock -%}
+
+{%- block scripts -%}
+<script type=text/javascript>
+    window.onload = function decorate_plinks(){
+        var plinks = document.getElementsByClassName('plink');
+        var OPs = [
+            {%- for t in threads -%} '>>{{ t["OP"]["ID"] }}', {%- endfor -%}
+        ];
+        var cPosts = [
+            {%- for thread in threads -%}
+                {%- if thread["OP"]["IP"] == cIP -%}
+                    '>>{{ thread["OP"]["ID"] }}',
+                {%- endif -%}
+                {%- for post in thread["POSTS"][-5:] -%}
+                    {%- if post["IP"] == cIP -%}
+                        '>>{{ post["ID"] }}',
+                    {%- endif -%}
+                {%- endfor -%}
+            {%- endfor -%}
+        ];
+
+        for(i = 0; i < plinks.length; ++i){
+            if(cPosts.indexOf(plinks[i].textContent) >= 0)
+                plinks[i].textContent += ' (You)';
+            else if(OPs.indexOf(plinks[i].textContent) >= 0)
+                plinks[i].textContent += ' (OP)';
+        }
+    };
+
+    function expand_file(id){
+        var ft = document.getElementById('ft' + id);
+        var tn = document.getElementById('tn' + id);
+        if(tn.hasAttribute('expanded')){
+            tn.setAttribute('src', tn.getAttribute('src').replace('files', 'thumbs'));
+            ft.removeAttribute('style');
+            tn.removeAttribute('expanded');
+        }else{
+            tn.setAttribute('src', tn.getAttribute('src').replace('thumbs', 'files'));
+            ft.setAttribute('style', 'float: none;');
+            tn.setAttribute('expanded', '');
+        }
+    }
+</script>
+{%- endblock -%}
+
+</html>

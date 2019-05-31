@@ -35,11 +35,15 @@ def thread(thread_id):
 
             util.fetch_thread_data(thread, cursor)
 
-    return render_template(
-        'thread.html',
-        thread = thread[0],
-        cIP = util.get_remote_IP()
-    )
+    if thread:
+        return render_template(
+            'thread.html',
+            thread = thread[0],
+            cIP = util.get_remote_IP()
+        )
+    else:
+        return render_template('error.html', message='Thread does not exist.')
+
 
 @ib.route('/post', methods=['POST'])
 def post():

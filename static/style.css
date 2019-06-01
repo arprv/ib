@@ -198,3 +198,8 @@ a {
     height: 100px;
 }
 
+.selected {
+    border-style: ridge;
+    border-color: #2aa198;
+}
+

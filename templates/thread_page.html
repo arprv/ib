@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block form %}
+    <center><h2 class="title">Reply</h2></center>
+    <form action="{{ url_for("reply", thread_id=thread["ID"]) }}" method="post" id="reply_form" enctype="multipart/form-data">
+        <input type="hidden" name="thread_id" value="{{ thread["ID"] }}">
+        <div id="reply_name"> <span>Name</span>
+            <input type="text" name="name">
+        </div>
+            <label for="file_btn" class="cstm_btn">
+            <span>Select File</span>
+            </label>
+            <input type="file" name="file" id="file_btn" accept="image/*">
+        <div id="comment"> <span>Comment</span>
+            <textarea id="text" name="text" form="reply_form"></textarea>
+        </div>
+        <input type="submit" id="submit_btn" value="post">
+    </form>
+{% endblock %}
+
+{% block navbar %}
+<div class="nav_bar">
+    [<a href="{{ url_for("board") }}">Return</a>]
+    <span class="t_stats">
+        <span class="t_replies" title="Replies">{{ thread["R_COUNT"] }}</span>
+         / 
+        <span class="t_images" title="Images">{{ thread["I_COUNT"] }}</span>
+         / 
+        <span class="t_posters" title="Posters">{{ thread["P_COUNT"] }}</span>
+</div>
+<hr>
+{% endblock %}
+
+{%- block thread -%}
+    {%- set thread_tail = 0 -%}
+    {%- set board = false -%}
+    {%- include "thread.html" -%}
+{%- endblock -%}
+

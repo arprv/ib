@@ -1,6 +1,6 @@
-{% extends "base.html" %}
+{%- extends "base.html" -%}
 
-{% block form %}
+{%- block form -%}
     <center><h2 class="title">Start a New Thread</h2></center>
     <form action="{{ url_for("post") }}" method="post" id="post_form" enctype="multipart/form-data">
         <div id="name"> <span>Name</span>
@@ -14,8 +14,17 @@
             </label>
             <input type="file" name="file" id="file_btn" accept="image/*">
         <div id="comment"> <span>Comment</span>
-            <textarea name="text" form="post_form"></textarea>
+            <textarea id="text" name="text" form="post_form"></textarea>
         </div>
         <input type="submit" id="submit_btn" value="post">
     </form>
-{% endblock %}
+{%- endblock -%}
+
+{%- block thread -%}
+    {%- set thread_tail = 5 -%}
+    {%- set board = true -%}
+    {%- for thread in threads -%}
+        {% include "thread.html" %}
+    {%- endfor -%}
+{%- endblock -%}
+

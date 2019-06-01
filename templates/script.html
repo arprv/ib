@@ -1,0 +1,115 @@
+<script type=text/javascript>
+    window.onload = function(){
+        augment_ptext();
+        decorate_plinks();
+        handle_board_reply();
+        highlight();
+    };
+        
+    function decorate_plinks(){
+        {%- if not threads -%}
+            {%- if not thread -%}
+                {%- set thread = None  -%}
+                {%- set threads = [] -%}
+            {%- else -%}
+                {%- set threads = [thread]  -%}
+            {%- endif -%}
+        {%- endif -%}
+
+        var plinks = document.getElementsByClassName('plink');
+        var OPs = [
+            {%- for t in threads -%} '>>{{ t["OP"]["ID"] }}', {%- endfor -%}
+        ];
+        var cPosts = [
+            {%- for thread in threads -%}
+                {%- if thread["OP"]["IP"] == cIP -%}
+                    '>>{{ thread["OP"]["ID"] }}',
+                {%- endif -%}
+                {%- for post in thread["POSTS"][-5:] -%}
+                    {%- if post["IP"] == cIP -%}
+                        '>>{{ post["ID"] }}',
+                    {%- endif -%}
+                {%- endfor -%}
+            {%- endfor -%}
+        ];
+
+        for(i = 0; i < plinks.length; ++i){
+            if(cPosts.indexOf(plinks[i].textContent) >= 0)
+                plinks[i].textContent += ' (You)';
+            else if(OPs.indexOf(plinks[i].textContent) >= 0)
+                plinks[i].textContent += ' (OP)';
+        }
+    }
+
+    function handle_board_reply(){
+        q = /q=(\d+)/.exec(window.location.search);
+        if(q)
+            reply(q[1]);
+    }
+
+    function expand_file(id){
+        var ft = document.getElementById('ft' + id);
+        var tn = document.getElementById('tn' + id);
+        if(tn.hasAttribute('expanded')){
+            tn.setAttribute('src', tn.getAttribute('src').replace('files', 'thumbs'));
+            ft.removeAttribute('style');
+            tn.removeAttribute('expanded');
+        }else{
+            tn.setAttribute('src', tn.getAttribute('src').replace('thumbs', 'files'));
+            ft.setAttribute('style', 'float: none;');
+            tn.setAttribute('expanded', '');
+        }
+    }
+
+    function reply(id){
+        var sl = window.getSelection().toString();
+        document.getElementById('text').value
+            += '>>' + id
+            + ((sl.length > 0) ? '\n' + sl.replace(/^/gm, '>') + '\n' : '\n');
+    }
+
+    var selected = -1; 
+    function highlight(id){
+        if(typeof(id) === 'undefined'){
+            if(h = /p(\d+)/.exec(window.location.hash))
+                id = h[1];
+            else
+                id = -1;
+        }
+        if(id >= 0){
+            if(selected >= 0){
+                post = document.getElementById('p' + selected);
+                post.setAttribute('class', post.getAttribute('class').replace(/ selected/, ''));
+            }
+            post = document.getElementById('p' + id);
+            pc = post.getAttribute('class');
+            if(!pc.includes('op')){
+                post.setAttribute('class',  pc + ' selected');
+                selected = id;
+            }
+        }
+    }
+
+
+    function augment_ptext(){
+        var link_re = /&gt;&gt;(\d+)/gm;
+        var quot_re = /(^|<br>)\s*(&gt;.*$)/gm;
+        var pts = document.getElementsByClassName('post_text');
+        for(i = 0; i < pts.length; ++i){
+            pts[i].innerHTML = pts[i].innerHTML.replace(link_re,
+                function(m, p){
+                    var thread = document.getElementById('pc' + p).parentNode.getAttribute('id');
+                    var url = '{{ url_for("thread", thread_id=0) }}'.slice(0, -1) + thread.slice(1, thread.length);
+                    return '<a class="plink" href="' + url + '#p' + p + '">' + '>>' + p + '</a>';
+                }
+            );
+            console.log(pts[i].innerHTML );
+            pts[i].innerHTML = pts[i].innerHTML.replace(quot_re,
+                function(m, p1, p2){
+                    return p1 + '<span class="greentext">' + p2 + '</span>'
+                }
+            );
+        }
+    }
+
+</script>

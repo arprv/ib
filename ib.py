@@ -21,7 +21,7 @@ def board():
             util.fetch_thread_data(threads, cursor)
 
     return render_template(
-        'board.html',
+        'board_page.html',
         threads = threads,
         cIP = util.get_remote_IP()
     )
@@ -37,7 +37,7 @@ def thread(thread_id):
 
     if thread:
         return render_template(
-            'thread.html',
+            'thread_page.html',
             thread = thread[0],
             cIP = util.get_remote_IP()
         )
@@ -54,7 +54,7 @@ def post():
         return render_template('error.html', message='No file selected.')
 
     with closing(util.conn2db()) as conn:
-        with conn as cursor:
+        with conn.cursor() as cursor:
             # Purge the thread with the oldest last reply if already at
             # THREAD_LIMIT
             active_threads = cursor.execute('SELECT ID FROM threads')

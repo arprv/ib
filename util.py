@@ -178,16 +178,10 @@ def refine_text(s):
     s = re.sub(r'<.*?>', '', s).strip()
 
     patterns = (
-        '(?P<link>>>(\d+))',
-        '(?P<quote>(^|[^>])(>[^>\n]+[^>\n]*))',
         '(?P<eline>(\n)\s*\n*\s*(\n))',
     )
     subs = {
-        'link': lambda mo : \
-            '<a class="plink" href="#p%s">%s</a>' % (mo.group(2), mo.group(1)),
-        'quote': lambda mo : \
-            '<span class="greentext">%s</span>' % (mo.group(3),),
-        'eline': lambda mo : '%s%s' % (mo.group(7), mo.group(8)),
+        'eline': lambda mo : '%s%s' % (mo.group(2), mo.group(3)),
     }
     regex = re.compile('|'.join(patterns), re.MULTILINE)
 

@@ -103,7 +103,6 @@
                     return '<a class="plink" href="' + url + '#p' + p + '">' + '>>' + p + '</a>';
                 }
             );
-            console.log(pts[i].innerHTML );
             pts[i].innerHTML = pts[i].innerHTML.replace(quot_re,
                 function(m, p1, p2){
                     return p1 + '<span class="greentext">' + p2 + '</span>'

@@ -9,7 +9,7 @@
                     <a href="{{ url_for("files", id=thread["OP"]["FILE"]["ID"]|int) }}" target="_blank">{{ thread["OP"]["FILE"]["NAME"] }}</a>
                     ({{ thread["OP"]["FILE"]["SIZE"] // 1024 }}KB, {{ thread["OP"]["FILE"]["RES"] }})
                 </div>
-                <a id="ft{{ thread["OP"]["FILE"]["ID"]|int }}" class="file_thumb"target="_blank" onclick="expand_file('{{ thread["OP"]["FILE"]["ID"]|int }}');return false;">
+                <a id="ft{{ thread["OP"]["FILE"]["ID"]|int }}" class="file_thumb" target="_blank" onclick="expand_file('{{ thread["OP"]["FILE"]["ID"]|int }}');return false;">
                     <img id="tn{{ thread["OP"]["FILE"]["ID"]|int }}" src="{{ url_for("thumbs", id=thread["OP"]["FILE"]["ID"]|int) }}" alt=":^(">
                 </a>
             </div>

@@ -149,7 +149,15 @@ def files(id):
         with conn.cursor() as cursor:
             success, v = util.fetch_file(id, cursor)
             if success:
-                return ib.response_class(v, mimetype='application/octet-stream')
+                cursor.execute('SELECT NAME FROM files WHERE ID = %s', (id,))
+                fname = cursor.fetchone()['NAME']
+                return ib.response_class(
+                    v,
+                    mimetype='application/octet-stream',
+                    headers={
+                        "Content-Disposition": "attachment;filename=%s" % fname
+                    }
+                )
             else:
                 return render_template('error.html', message=v)
 

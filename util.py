@@ -76,7 +76,6 @@ def fetch_file(id, cursor, thumb=False):
     else:
         cursor.execute('SELECT FILE FROM files WHERE ID = %s', (id,))
     t = cursor.fetchone()
-    #t = t['THUMB'] if thumb else t['FILE']
 
     if not t:
         return Option(False, 'File does not exist.')

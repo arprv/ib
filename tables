@@ -1,0 +1,38 @@
+CREATE TABLE `threads` (
+  `ID` int(10) unsigned NOT NULL,
+  `SUBJECT` varchar(255) DEFAULT NULL,
+  `LAST_POST` datetime NOT NULL,
+  PRIMARY KEY (`ID`)
+);
+CREATE TABLE `posts` (
+  `ID` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `TIME` datetime NOT NULL,
+  `USERNAME` varchar(25) DEFAULT NULL,
+  `TEXT` text NOT NULL,
+  `FILE_ID` int(10) unsigned DEFAULT NULL,
+  `THREAD_ID` int(10) unsigned DEFAULT NULL,
+  `IP` varchar(32) NOT NULL,
+  PRIMARY KEY (`ID`)
+);
+CREATE TABLE `post_links` (
+  `POST` int(10) unsigned NOT NULL,
+  `LINKED_BY` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`POST`,`LINKED_BY`),
+  KEY `FK_pl_post` (`POST`),
+  KEY `FK_pl_linked_by` (`LINKED_BY`),
+  CONSTRAINT `FK_pl_linked_by` FOREIGN KEY (`LINKED_BY`) REFERENCES `posts` (`ID`),
+  CONSTRAINT `FK_pl_post` FOREIGN KEY (`POST`) REFERENCES `posts` (`ID`)
+);
+CREATE TABLE `files` (
+  `ID` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `NAME` varchar(255) NOT NULL,
+  `SIZE` int(10) unsigned NOT NULL,
+  `RES` varchar(32) NOT NULL,
+  `FILE` mediumblob NOT NULL,
+  `THUMB` mediumblob NOT NULL,
+  PRIMARY KEY (`ID`)
+);
+CREATE TABLE `banned` (
+  `IP` varchar(32) NOT NULL,
+  PRIMARY KEY (`IP`)
+);

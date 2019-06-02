@@ -1,16 +1,67 @@
 import MySQLdb
 import MySQLdb.cursors
+import json
 from contextlib import closing
 from htmlmin.main import minify
 
 from flask import Flask, render_template, url_for, request, redirect, Markup
+from flask import jsonify
 ib = Flask(__name__)
-ib.debug = True
+ib.config.from_object('conf.FlaskRestConf')
 ib.jinja_env.trim_blocks = True
 ib.jinja_env.lstrip_blocks = True
 
+from flask_restful import Resource, Api
+api = Api(ib)
+
 from conf import *
 import util
+
+class ApiBoard(Resource):
+    def get(self):
+        with closing(util.conn2db()) as conn:
+            with conn.cursor() as cursor:
+                cursor.execute('SELECT * FROM threads')
+                threads = cursor.fetchall()
+                for thread in threads:
+                    cursor.execute(
+                        'SELECT ID FROM posts WHERE THREAD_ID = %s',
+                        (thread['ID'], )
+                    )
+                    thread['REPLIES'] = [x['ID'] for x in cursor.fetchall()]
+                return jsonify(threads)
+class ApiThread(Resource):
+    def get(self, id):
+        with closing(util.conn2db()) as conn:
+            with conn.cursor() as cursor:
+                cursor.execute('SELECT * FROM threads WHERE ID=%s', (id, ))
+                thread = cursor.fetchone()
+                util.fetch_thread_data([thread], cursor, IPs=False)
+                return thread
+class ApiPost(Resource):
+    def get(self, id):
+        with closing(util.conn2db()) as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    'SELECT ID, TIME, USERNAME, TEXT, FILE_ID, THREAD_ID '
+                    'FROM posts WHERE ID=%s',
+                    (id, )
+                )
+                return cursor.fetchone()
+class ApiFile(Resource):
+    def get(self, id):
+        with closing(util.conn2db()) as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    'SELECT ID, NAME, SIZE, RES FROM files WHERE ID = %s',
+                    (id, )
+                )
+                return cursor.fetchone()
+
+api.add_resource(ApiBoard,  '/api/board')
+api.add_resource(ApiThread, '/api/threads/<int:id>')
+api.add_resource(ApiPost,   '/api/posts/<int:id>')
+api.add_resource(ApiFile,   '/api/files/<int:id>')
 
 @ib.after_request
 def minify_response(response):
@@ -33,8 +84,8 @@ def board():
         cIP = util.get_remote_IP()
     )
 
-@ib.route('/thread/<int:thread_id>')
-def thread(thread_id):
+@ib.route('/threads/<int:thread_id>')
+def threads(thread_id):
     with closing(util.conn2db()) as conn:
         with conn.cursor() as cursor:
             cursor.execute('SELECT * FROM threads WHERE ID = %s', (thread_id, ))
@@ -144,7 +195,7 @@ def reply(thread_id):
     if not success:
         return render_template('error.html', message=val)
     else:
-        return redirect(url_for('thread', thread_id=thread_id))
+        return redirect(url_for('threads', thread_id=thread_id))
 
 @ib.route('/thumbs/<int:id>', methods=['GET'])
 def thumbs(id):

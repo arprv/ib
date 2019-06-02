@@ -136,12 +136,13 @@ def is_banned(ip, cursor):
     else:
         return False
 
-def fetch_thread_data(threads, cursor):
+def fetch_thread_data(threads, cursor, IPs=True):
     for thread in threads:
         # Fetch OP
         cursor.execute(
-            'SELECT ID, TIME, USERNAME, TEXT, IP '
-            'FROM posts WHERE ID = %s',
+            'SELECT ID, TIME, USERNAME, TEXT%s '
+            % (', IP' if IPs else ' ', ) +
+            ' FROM posts WHERE ID = %s',
             (thread['ID'], )
         )
         thread['OP'] = cursor.fetchone()
@@ -153,8 +154,9 @@ def fetch_thread_data(threads, cursor):
 
         # Fetch Replies
         cursor.execute(
-            'SELECT ID, TIME, USERNAME, TEXT, IP '
-            'FROM posts WHERE THREAD_ID = %s',
+            'SELECT ID, TIME, USERNAME, TEXT%s '
+            % (', IP' if IPs else ' ', ) +
+            ' FROM posts WHERE THREAD_ID = %s',
             (thread['ID'], )
         )
         thread['POSTS'] = cursor.fetchall()

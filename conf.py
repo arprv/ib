@@ -7,3 +7,6 @@ MAX_IMG_WH = 150
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif', 'tiff', 'bmp'])
 MAX_POST_LEN = 5000
 
+class FlaskRestConf(object):
+    RESTFUL_JSON = {'default': str}
+

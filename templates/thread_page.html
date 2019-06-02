@@ -1,6 +1,17 @@
-{% extends "base.html" %}
+{%- extends "base.html" -%}
 
-{% block form %}
+{%- block title -%}
+<title>
+    {%- if thread["SUBJECT"] -%}
+        {{ thread["SUBJECT"] }}
+    {%- else -%}
+        {{ thread["ID"] }}
+    {%- endif %}
+     - ib
+</title>
+{%- endblock -%}
+
+{%- block form -%}
     <center><h2 class="title">Reply</h2></center>
     <form action="{{ url_for("reply", thread_id=thread["ID"]) }}" method="post" id="reply_form" enctype="multipart/form-data">
         <input type="hidden" name="thread_id" value="{{ thread["ID"] }}">
@@ -16,9 +27,9 @@
         </div>
         <input type="submit" id="submit_btn" value="post">
     </form>
-{% endblock %}
+{%- endblock -%}
 
-{% block navbar %}
+{%- block navbar -%}
 <div class="nav_bar">
     [<a href="{{ url_for("board") }}">Return</a>]
     <span class="t_stats">
@@ -29,7 +40,7 @@
         <span class="t_posters" title="Posters">{{ thread["P_COUNT"] }}</span>
 </div>
 <hr>
-{% endblock %}
+{%- endblock -%}
 
 {%- block thread -%}
     {%- set thread_tail = 0 -%}

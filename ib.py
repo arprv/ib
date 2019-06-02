@@ -55,6 +55,9 @@ def post():
 
     with closing(util.conn2db()) as conn:
         with conn.cursor() as cursor:
+            # Make sure the poster is not banned
+            if util.is_banned(util.get_remote_IP(), cursor):
+                return render_template('error.html', message='You are banned.')
             # Purge the thread with the oldest last reply if already at
             # THREAD_LIMIT
             active_threads = cursor.execute('SELECT ID FROM threads')
@@ -63,7 +66,7 @@ def post():
                     'SELECT ID FROM threads ORDER BY LAST_POST ASC LIMIT 1'
                 )
                 least_active = cursor.fetchone()
-                util.purge_thread(least_active[0]['ID'], cursor)
+                util.purge_thread(least_active['ID'], cursor)
 
             # Store the image
             success, val = util.store_file(
@@ -101,6 +104,9 @@ def reply(thread_id):
 
     with closing(util.conn2db()) as conn:
         with conn.cursor() as cursor:
+            # Make sure the poster is not banned
+            if util.is_banned(util.get_remote_IP(), cursor):
+                return render_template('error.html', message='You are banned.')
             # Store file if attached
             attached = False
             val = None

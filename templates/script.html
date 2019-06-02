@@ -98,9 +98,13 @@
         for(i = 0; i < pts.length; ++i){
             pts[i].innerHTML = pts[i].innerHTML.replace(link_re,
                 function(m, p){
-                    var thread = document.getElementById('pc' + p).parentNode.getAttribute('id');
-                    var url = '{{ url_for("thread", thread_id=0) }}'.slice(0, -1) + thread.slice(1, thread.length);
-                    return '<a class="plink" href="' + url + '#p' + p + '">' + '>>' + p + '</a>';
+                    if(pc = document.getElementById('pc' + p)){
+                        var thread = pc.parentNode.getAttribute('id');
+                        var url = '{{ url_for("thread", thread_id=0) }}'.slice(0, -1) + thread.slice(1, thread.length);
+                        return '<a class="plink" href="' + url + '#p' + p + '" onclick="highlight(' + p + ')">' + '>>' + p + '</a>';
+                    }else{
+                        return '<del>>>' + p + '</del>';
+                    }
                 }
             );
             pts[i].innerHTML = pts[i].innerHTML.replace(quot_re,

@@ -86,27 +86,55 @@ def is_allowed(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def purge_thread(thread, cursor):
-    # Fetch info on files to be deleted
+def purge_thread(id, cursor):
+    # TODO: make sure this works
+    # Delete post links from the thread
     cursor.execute(
-        'SELECT posts.FILE_ID FROM posts '
-        'INNER JOIN files ON posts.FILE_ID=files.ID '
-        'WHERE posts.THREAD_ID = %s OR posts.ID = %s',
-        (thread, thread)
+        'DELETE FROM post_links WHERE LINKED_BY in '
+        '(SELECT ID FROM posts WHERE THREAD_ID = %s OR ID = %s)',
+        (id, id)
     )
-
-    # Purge files from the table
-    for f in cursor.fetchall():
-        cursor.execute('DELETE FROM files WHERE ID = %s', (f,))
+    # Delete files from the thread
+    cursor.execute(
+        'DELETE FROM files WHERE ID IN '
+        '(SELECT FILE_ID FROM posts WHERE THREAD_ID = %s OR ID = %s)',
+        (id, id)
+    )
 
     # Delete all posts in the thread
     cursor.execute(
         'DELETE FROM posts WHERE THREAD_ID = %s OR ID = %s',
-        (thread, thread)
+        (id, id)
     )
 
     # Delete the thread
-    cursor.execute('DELETE FROM threads WHERE ID = %s', (thread,))
+    cursor.execute('DELETE FROM threads WHERE ID = %s', (id,))
+
+def purge_post(id, cursor):
+    if(cursor.execute('SELECT THREAD_ID FROM posts WHERE ID = %s', (id,)) == 0):
+        return False;
+    if cursor.fetchone()['THREAD_ID'] == SQL_CONST_OP:
+        purge_thread(id, cursor)
+    else:
+        cursor.execute(
+            'DELETE FROM post_links WHERE POST in '
+            '(SELECT ID FROM posts WHERE THREAD_ID = %s OR ID = %s)',
+            (id, id)
+        )
+        cursor.execute(
+            'DELETE FROM files WHERE ID IN '
+            '(SELECT FILE_ID FROM posts WHERE THREAD_ID = %s OR ID = %s)',
+            (id, id)
+        )
+        cursor.execute('DELETE FROM posts WHERE ID = %s', (id, ))
+    return True
+
+def is_banned(ip, cursor):
+    cursor.execute('SELECT IP FROM banned WHERE IP = %s', (ip, ))
+    if cursor.fetchone():
+        return True
+    else:
+        return False
 
 def fetch_thread_data(threads, cursor):
     for thread in threads:
@@ -242,4 +270,10 @@ def store_post(thread_id, file_id, cursor):
 
     return Option(True, post_id)
 
+def is_banned(ip, cursor):
+    cursor.execute('SELECT IP FROM banned WHERE IP = %s', (ip, ))
+    if cursor.fetchone():
+        return True
+    else:
+        return False
 

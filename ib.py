@@ -1,6 +1,7 @@
 import MySQLdb
 import MySQLdb.cursors
 from contextlib import closing
+from htmlmin.main import minify
 
 from flask import Flask, render_template, url_for, request, redirect, Markup
 ib = Flask(__name__)
@@ -10,6 +11,12 @@ ib.jinja_env.lstrip_blocks = True
 
 from conf import *
 import util
+
+@ib.after_request
+def minify_response(response):
+    if response.content_type == 'text/html; charset=utf-8':
+        response.set_data(minify(response.get_data(as_text=True)))
+    return response
 
 @ib.route('/')
 def board():

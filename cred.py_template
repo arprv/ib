@@ -1,0 +1,4 @@
+SQL_HOST    = 'foo.com'
+SQL_USER    = 'root'
+SQL_PASS    = 'guest'
+SQL_DB      = 'my_db'

@@ -117,9 +117,9 @@ def purge_post(id, cursor):
         purge_thread(id, cursor)
     else:
         cursor.execute(
-            'DELETE FROM post_links WHERE POST in '
-            '(SELECT ID FROM posts WHERE THREAD_ID = %s OR ID = %s)',
-            (id, id)
+            'DELETE FROM post_links WHERE LINKED_BY in '
+            '(SELECT ID FROM posts WHERE ID = %s)',
+            (id, )
         )
         cursor.execute(
             'DELETE FROM files WHERE ID IN '

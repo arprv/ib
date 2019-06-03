@@ -29,6 +29,6 @@ thread limit, valid file size/format, etc.
 
 Screenshots
 ---------------------
-![Board](arprv.github.com/ib/screenshots/ib_board.png)
-![Thread with expanded image](arprv.github.com/ib/screenshots/ib_thread.png)
+![Board](/screenshots/ib_board.png)
+![Thread with expanded image](/screenshots/ib_thread.png)
 
